@@ -8,19 +8,22 @@ namespace ApiClient
 {
     class Program
     {
-        static async Task GetOneName(string name)
+        static async Task GetOneSearchResult(string searchResult)
         {
             try
             {
                 var client = new HttpClient();
 
-                var responseBodyAsStream = await client.GetStreamAsync($"https://api.openbrewerydb.org/breweries?by_name={name}");
+                var responseAsStream = await client.GetStreamAsync($"https://api.openbrewerydb.org/breweries/search?query={searchResult}");
 
-                var item = await JsonSerializer.DeserializeAsync<Breweries>(responseBodyAsStream);
+                var items = await JsonSerializer.DeserializeAsync<List<Breweries>>(responseAsStream);
 
-                Console.WriteLine($"Found a brewery named {item.Name} located in {item.City}, {item.State}. Their address is {item.Street}. It is a {item.BreweryType} brewery.");
+                foreach (var item in items)
+                {
+                    Console.WriteLine($"Found a brewery named {item.Name} located in {item.City}, {item.State}. It is a {item.BreweryType} brewery.");
+                }
             }
-            catch (HttpRequestException)
+            catch (Exception)
             {
                 Console.WriteLine("I could not find that item");
             }
@@ -66,7 +69,8 @@ namespace ApiClient
                                 break;
                             case 2:
                                 Console.WriteLine("What city would you like to search for? ");
-                                var citySearch = Console.ReadLine();
+                                var city = Console.ReadLine();
+                                await GetOneSearchResult(city);
                                 break;
                         }
                         break;
@@ -91,7 +95,7 @@ namespace ApiClient
                                 Console.WriteLine();
                                 Console.WriteLine("What name would you like to search for? ");
                                 var name = Console.ReadLine();
-                                await GetOneName(name);
+                                await GetOneSearchResult(name);
                                 break;
                         }
                         break;
@@ -115,6 +119,8 @@ namespace ApiClient
                             case 2:
                                 Console.WriteLine();
                                 Console.WriteLine("What state would you like to search for? ");
+                                var state = Console.ReadLine();
+                                await GetOneSearchResult(state);
                                 Console.ReadLine();
                                 break;
                         }
@@ -139,7 +145,8 @@ namespace ApiClient
                             case 2:
                                 Console.WriteLine();
                                 Console.WriteLine("What type would you like to search for? ");
-                                Console.ReadLine();
+                                var type = Console.ReadLine();
+                                await GetOneSearchResult(type);
                                 break;
                         }
                         break;
